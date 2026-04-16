@@ -19,6 +19,11 @@ try {
   console.log("❌ DB ERROR:", err.message);
 }
 
+// 🔥 DIRECT TEST (IMPORTANT - ABOVE ROUTES)
+app.get("/api/test-direct", (req, res) => {
+  res.send("DIRECT ROUTE WORKING ✅");
+});
+
 // 🔥 ROUTES LOAD CHECK
 let routes;
 try {
@@ -33,11 +38,6 @@ if (routes) {
   app.use("/api", routes);
   console.log("✅ ROUTES CONNECTED AT /api");
 }
-
-// 🔥 DIRECT TEST (IMPORTANT)
-app.get("/api/test-direct", (req, res) => {
-  res.send("DIRECT ROUTE WORKING ✅");
-});
 
 // 🔥 HOME ROUTE
 app.get("/", (req, res) => {
