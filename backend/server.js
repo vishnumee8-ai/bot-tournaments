@@ -19,13 +19,37 @@ try {
   console.log("❌ DB ERROR:", err.message);
 }
 
-// 🔥 ROUTES
-const routes = require("./routes");
-app.use("/api", routes);
+// 🔥 ROUTES LOAD CHECK
+let routes;
+try {
+  routes = require("./routes");
+  console.log("✅ ROUTES FILE LOADED");
+} catch (err) {
+  console.log("❌ ROUTES LOAD ERROR:", err.message);
+}
+
+// 🔥 ROUTES USE
+if (routes) {
+  app.use("/api", routes);
+  console.log("✅ ROUTES CONNECTED AT /api");
+}
+
+// 🔥 DIRECT TEST (IMPORTANT)
+app.get("/api/test-direct", (req, res) => {
+  res.send("DIRECT ROUTE WORKING ✅");
+});
 
 // 🔥 HOME ROUTE
 app.get("/", (req, res) => {
   res.send("API Running ✅");
+});
+
+// ❌ 404 HANDLER (VERY IMPORTANT)
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route Not Found ❌",
+    path: req.originalUrl
+  });
 });
 
 // 🔥 SERVER START

@@ -1,7 +1,7 @@
 const axios = require("axios");
 
+// 🔥 IMPORTANT: apna EXACT Render URL
 const API = "https://ts-api.onrender.com/api";
-// Render ke liye yaha apna live URL daal dena
 
 async function sendResult() {
   try {
@@ -12,14 +12,18 @@ async function sendResult() {
       matchId: "match1"
     };
 
+    console.log("📤 Sending:", data);
+
     const res = await axios.post(`${API}/result`, data);
 
-    console.log("✅ BOT SENT:", res.data);
+    console.log("✅ BOT SUCCESS:", res.data);
 
   } catch (err) {
-    console.log("❌ BOT ERROR:", err.message);
+    console.log("❌ ERROR STATUS:", err.response?.status);
+    console.log("❌ ERROR DATA:", err.response?.data);
+    console.log("❌ ERROR MSG:", err.message);
   }
 }
 
-// Har 10 sec me run hoga
+// 🔁 10 sec loop
 setInterval(sendResult, 10000);

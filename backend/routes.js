@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+console.log("✅ ROUTES FILE LOADED"); // 🔥 DEBUG
+
 const ai = require("./ai");
 const points = require("./points");
 const Player = require("./models/Player");
@@ -18,7 +20,7 @@ router.get("/test", (req, res) => {
 
 
 // =========================
-// SAVE RESULT API (DEBUG VERSION)
+// SAVE RESULT API
 // =========================
 router.post("/result", async (req, res) => {
   try {
@@ -26,7 +28,6 @@ router.post("/result", async (req, res) => {
 
     console.log("📥 Incoming Data:", data);
 
-    // validation
     if (!data.name || data.kills == null || data.position == null) {
       console.log("❌ Validation Failed");
       return res.status(400).json({
@@ -36,9 +37,6 @@ router.post("/result", async (req, res) => {
 
     const calculatedPoints = points.calculate(data);
     const decision = ai.makeDecision(calculatedPoints);
-
-    console.log("🧮 Points:", calculatedPoints);
-    console.log("🤖 AI Result:", decision);
 
     const newPlayer = new Player({
       name: data.name,
@@ -50,7 +48,7 @@ router.post("/result", async (req, res) => {
 
     await newPlayer.save();
 
-    console.log("💾 Player Saved in DB");
+    console.log("💾 Player Saved");
 
     res.json({
       message: "Player Saved ✅",
@@ -64,10 +62,7 @@ router.post("/result", async (req, res) => {
     });
 
   } catch (error) {
-    console.log("❌ ERROR OCCURRED:");
-    console.log("━━━━━━━━━━━━━━━━");
-    console.log(error.message);
-    console.log("━━━━━━━━━━━━━━━━");
+    console.log("❌ ERROR:", error.message);
 
     res.status(500).json({
       message: "Server Error ❌",
@@ -78,7 +73,7 @@ router.post("/result", async (req, res) => {
 
 
 // =========================
-// LEADERBOARD API (TOP 10)
+// LEADERBOARD
 // =========================
 router.get("/leaderboard", async (req, res) => {
   try {
@@ -86,51 +81,51 @@ router.get("/leaderboard", async (req, res) => {
       .sort({ points: -1 })
       .limit(10);
 
-    console.log("📊 Leaderboard requested");
-
     res.json({
       message: "Leaderboard fetched ✅",
-      count: players.length,
       data: players
     });
 
   } catch (error) {
-    console.log("❌ Leaderboard Error:", error.message);
-
     res.status(500).json({
-      message: "Server Error ❌",
-      error: error.message
+      message: "Server Error ❌"
     });
   }
 });
 
 
 // =========================
-// MATCH WISE LEADERBOARD
+// MATCH LEADERBOARD
 // =========================
 router.get("/leaderboard/:matchId", async (req, res) => {
   try {
-    const matchId = req.params.matchId;
-
-    const players = await Player.find({ matchId })
-      .sort({ points: -1 });
-
-    console.log(`📊 Match Leaderboard: ${matchId}`);
+    const players = await Player.find({
+      matchId: req.params.matchId
+    }).sort({ points: -1 });
 
     res.json({
-      message: `Leaderboard for ${matchId} ✅`,
-      count: players.length,
+      message: "Match leaderboard ✅",
       data: players
     });
 
   } catch (error) {
-    console.log("❌ Match Leaderboard Error:", error.message);
-
     res.status(500).json({
-      message: "Server Error ❌",
-      error: error.message
+      message: "Server Error ❌"
     });
   }
+});
+
+
+// =========================
+// ❌ UNKNOWN ROUTE HANDLER (IMPORTANT)
+// =========================
+router.use((req, res) => {
+  console.log("❌ Route Not Found:", req.method, req.url);
+
+  res.status(404).json({
+    message: "Route Not Found ❌",
+    path: req.originalUrl
+  });
 });
 
 module.exports = router;
