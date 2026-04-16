@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-console.log("✅ ROUTES FILE LOADED"); // 🔥 DEBUG
+console.log("✅ ROUTES FILE LOADED");
 
 const ai = require("./ai");
 const points = require("./points");
@@ -9,7 +9,7 @@ const Player = require("./models/Player");
 
 
 // =========================
-// TEST API (CHECK SERVER)
+// TEST API
 // =========================
 router.get("/test", (req, res) => {
   res.json({
@@ -20,7 +20,74 @@ router.get("/test", (req, res) => {
 
 
 // =========================
-// SAVE RESULT API
+// 🤖 AI COMMAND SYSTEM
+// =========================
+router.post("/command", async (req, res) => {
+  try {
+    const { command } = req.body;
+
+    console.log("🤖 Command:", command);
+
+    // 🏆 MATCH CREATE
+    if (command.toLowerCase().includes("match create")) {
+      const matchId = "match_" + Date.now();
+
+      return res.json({
+        message: "Match Created ✅",
+        matchId
+      });
+    }
+
+    // 🎯 POINT SYSTEM MATCH
+    if (command.toLowerCase().includes("point system")) {
+      return res.json({
+        message: "Point System Match Created ✅",
+        system: "Kills + Position auto calculation"
+      });
+    }
+
+    // 🧮 AUTO RESULT CALCULATE
+    if (command.toLowerCase().includes("calculate")) {
+      const players = await Player.find();
+
+      const updated = [];
+
+      for (let p of players) {
+        const pts = points.calculate(p);
+
+        p.points = pts;
+        await p.save();
+
+        updated.push({
+          name: p.name,
+          points: pts
+        });
+      }
+
+      return res.json({
+        message: "Results Calculated ✅",
+        data: updated
+      });
+    }
+
+    // ❌ UNKNOWN COMMAND
+    res.json({
+      message: "Unknown command ❌"
+    });
+
+  } catch (error) {
+    console.log("❌ COMMAND ERROR:", error.message);
+
+    res.status(500).json({
+      message: "Server Error ❌",
+      error: error.message
+    });
+  }
+});
+
+
+// =========================
+// SAVE RESULT
 // =========================
 router.post("/result", async (req, res) => {
   try {
@@ -29,7 +96,6 @@ router.post("/result", async (req, res) => {
     console.log("📥 Incoming Data:", data);
 
     if (!data.name || data.kills == null || data.position == null) {
-      console.log("❌ Validation Failed");
       return res.status(400).json({
         message: "Missing required fields ❌"
       });
@@ -48,8 +114,6 @@ router.post("/result", async (req, res) => {
 
     await newPlayer.save();
 
-    console.log("💾 Player Saved");
-
     res.json({
       message: "Player Saved ✅",
       player: {
@@ -65,8 +129,7 @@ router.post("/result", async (req, res) => {
     console.log("❌ ERROR:", error.message);
 
     res.status(500).json({
-      message: "Server Error ❌",
-      error: error.message
+      message: "Server Error ❌"
     });
   }
 });
@@ -117,7 +180,7 @@ router.get("/leaderboard/:matchId", async (req, res) => {
 
 
 // =========================
-// ❌ UNKNOWN ROUTE HANDLER (IMPORTANT)
+// ❌ UNKNOWN ROUTE
 // =========================
 router.use((req, res) => {
   console.log("❌ Route Not Found:", req.method, req.url);
