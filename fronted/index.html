@@ -1,19 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tournament AI</title>
+  <title>🔥 Tournament Leaderboard</title>
+
+  <style>
+    body {
+      background: #0f172a;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      background: #1e293b;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #334155;
+    }
+
+    th {
+      background: #0ea5e9;
+    }
+
+    tr:hover {
+      background: #334155;
+    }
+
+    .top1 { color: gold; }
+    .top2 { color: silver; }
+    .top3 { color: orange; }
+
+  </style>
 </head>
+
 <body>
 
-<h1>Tournament Panel</h1>
+<h1>🏆 Live Tournament Leaderboard</h1>
 
-<input type="text" id="playerName" placeholder="Enter Player Name">
-<button onclick="addPlayer()">Add Player</button>
+<table id="board">
+  <tr>
+    <th>Rank</th>
+    <th>Name</th>
+    <th>Kills</th>
+    <th>Points</th>
+  </tr>
+</table>
 
-<button onclick="calculatePoints()">Calculate Points</button>
+<script>
 
-<div id="result"></div>
+const API = "https://ts-api.onrender.com/api";
 
-<script src="app.js"></script>
+async function loadLeaderboard() {
+  try {
+    const res = await fetch(API + "/leaderboard");
+    const data = await res.json();
+
+    const table = document.getElementById("board");
+
+    table.innerHTML = `
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Kills</th>
+        <th>Points</th>
+      </tr>
+    `;
+
+    data.data.forEach((p, i) => {
+
+      let cls = "";
+      if (i === 0) cls = "top1";
+      if (i === 1) cls = "top2";
+      if (i === 2) cls = "top3";
+
+      table.innerHTML += `
+        <tr class="${cls}">
+          <td>#${i + 1}</td>
+          <td>${p.name}</td>
+          <td>${p.kills}</td>
+          <td>${p.points}</td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    console.log("Error loading leaderboard:", err);
+  }
+}
+
+// 🔁 auto refresh every 3 sec
+setInterval(loadLeaderboard, 3000);
+
+// first load
+loadLeaderboard();
+
+</script>
+
 </body>
 </html>
